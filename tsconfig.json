@@ -1,0 +1,16 @@
+{
+    "$schema": "https://json.schemastore.org/tsconfig",
+    "_version": "22.0.0",
+  
+    "compilerOptions": {
+      // Target modern JavaScript features for better performance
+      "lib": ["es2024", "ESNext.Array", "ESNext.Collection", "ESNext.Iterator"],
+      "module": "nodenext",        // Use Node.js module resolution
+      "target": "es2022",          // Compile to ES2022 JavaScript
+  
+      "strict": true,              // Enable all strict type checking options
+      "esModuleInterop": true,     // Enable CommonJS/AMD/UMD module interop
+      "skipLibCheck": true,        // Skip type checking of declaration files
+      "moduleResolution": "node16" // Use Node.js 16+ module resolution strategy
+    }
+}

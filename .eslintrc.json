@@ -1,0 +1,9 @@
+{
+    "extends": [
+        "@rocketseat/eslint-config/node" // Extend Rocketseat's Node.js ESLint configuration
+    ],
+    "rules": {
+        "no-useless-constructor": "off",                    // Allow empty constructors
+        "@typescript-eslint/no-explicit-any": "off"         // Allow explicit 'any' types
+    }
+}
