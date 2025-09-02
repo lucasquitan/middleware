@@ -1,0 +1,10 @@
+version: '3.8'
+
+services:
+  middleware:
+    build: .
+    ports:
+      - "3333:3333"
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
