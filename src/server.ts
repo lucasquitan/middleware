@@ -1,4 +1,9 @@
 import { app } from './app'
+import dotenv from 'dotenv'
+
+dotenv.config()
+
+const port: number = parseInt(process.env.PORT || '3333')
 
 /**
  * Server startup configuration
@@ -9,9 +14,9 @@ import { app } from './app'
 app
   .listen({
     host: '0.0.0.0',
-    port: 3333, // HTTP server port - can be configured via environment variables
+    port, // HTTP server port - can be configured via environment variables
   })
   .then(() => {
     // Log successful server startup
-    console.log('HTTP server running!')
+    console.log(`🚀 HTTP server running on port ${port}`)
   })

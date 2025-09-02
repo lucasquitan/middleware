@@ -14,8 +14,11 @@ COPY . .
 # Build the application
 RUN npm run build
 
+# Set default port
+ENV PORT=10000
+
 # Expose port
-EXPOSE 3333
+EXPOSE $PORT
 
 # Start the application
 CMD ["npm", "start"]
