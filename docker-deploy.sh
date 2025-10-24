@@ -9,15 +9,16 @@ docker build -t middleware .
 docker stop middleware 2>/dev/null || true
 docker rm middleware 2>/dev/null || true
 
-# Run the container
+# Run the container with .env file
 docker run -d \
   --name middleware \
-  -p 3333:3333 \
-  -e NODE_ENV=production \
+  -p 10000:10000 \
+  -e PORT=10000 \
+  --env-file .env \
   --restart unless-stopped \
   middleware
 
-echo "✅ Middleware service is running on port 3333"
+echo "✅ Middleware service is running on port 10000"
 echo "📊 Check status: docker ps"
 echo "📝 View logs: docker logs middleware"
 echo "🛑 Stop service: docker stop middleware"

@@ -14,11 +14,11 @@ COPY . .
 # Build the application
 RUN npm run build
 
-# Set default port
-ENV PORT=10000
+# Copy .env file (if it exists)
+COPY .env* ./
 
 # Expose port
-EXPOSE $PORT
+EXPOSE 10000
 
 # Start the application
 CMD ["npm", "start"]

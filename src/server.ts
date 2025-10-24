@@ -1,9 +1,10 @@
+import dotenv from 'dotenv'
 import { app } from './app'
 
-// Always run in debug mode
-process.env.NODE_ENV = 'debug'
+// Load environment variables from .env file
+dotenv.config()
 
-const port: number = parseInt(process.env.PORT || '3333')
+const port: number = parseInt(process.env.PORT || '3331')
 
 /**
  * Server startup configuration
@@ -19,5 +20,6 @@ app
   .then(() => {
     // Log successful server startup
     console.log(`🚀 NODE_ENV: ${process.env.NODE_ENV}`)
+    console.log(`🔑 TOKEN: ${process.env.TOKEN ? 'Provided' : 'Not provided'}`)
     console.log(`🚀 HTTP server running on port ${port}`)
   })
