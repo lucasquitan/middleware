@@ -1,5 +1,5 @@
-import { app } from './app'
 import dotenv from 'dotenv'
+import { app } from './app'
 
 dotenv.config()
 
@@ -18,5 +18,6 @@ app
   })
   .then(() => {
     // Log successful server startup
+    console.log(`🚀 NODE_ENV: ${dotenv.config().parsed?.NODE_ENV}`)
     console.log(`🚀 HTTP server running on port ${port}`)
   })

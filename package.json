@@ -4,9 +4,9 @@
   "description": "HTTP proxy/middleware service built with Fastify",
   "main": "index.js",
   "scripts": {
-    "dev": "tsx watch src/server",
+    "dev": "tsx watch --env-file=.env src/server",
     "build": "tsup src --out-dir dist",
-    "start": "node dist/server.js"
+    "start": "node --env-file=.env dist/server.js"
   },
   "repository": {
     "type": "git",
