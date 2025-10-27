@@ -57,7 +57,7 @@ export async function getCPFInfo(request: FastifyRequest, reply: FastifyReply) {
       const situacao: string = (data as any)[0].servidor.situacao.toUpperCase()
       const orgao: string = (
         data as any
-      )[0].servidor.orgaoServidorLotacao.nome.toUpperCase()
+      )[0].servidor.orgaoServidorLotacao.nomeOrgaoVinculado.toUpperCase()
       const sigla: string = (
         data as any
       )[0].servidor.orgaoServidorLotacao.sigla.toUpperCase()
@@ -90,7 +90,7 @@ export async function getCPFInfo(request: FastifyRequest, reply: FastifyReply) {
         success: true,
         original_status: 404,
         response: {
-          message: 'Servidor não encontrado',
+          message: 'CPF não encontrado na base.',
           timestamp: new Date().toISOString(),
         },
       })
