@@ -5,6 +5,7 @@ import { app } from './app'
 dotenv.config()
 
 const port: number = parseInt(process.env.PORT || '3331')
+const env: string = process.env.NODE_ENV || 'production'
 
 /**
  * Server startup configuration
@@ -19,7 +20,13 @@ app
   })
   .then(() => {
     // Log successful server startup
-    console.log(`🚀 NODE_ENV: ${process.env.NODE_ENV}`)
-    console.log(`🔑 TOKEN: ${process.env.TOKEN ? 'Provided' : 'Not provided'}`)
-    console.log(`🚀 HTTP server running on port ${port}`)
+    console.log(`🚀 HTTP server running on port ${port} in ${env} mode`)
+
+    if (env === 'debug') {
+      console.log(`🐛 TOKEN: ${process.env.TOKEN}`)
+    }
+  })
+  .catch((error) => {
+    console.error(`❌ Error starting server: ${error}`)
+    process.exit(1)
   })

@@ -4,6 +4,8 @@ import dotenv from 'dotenv'
 
 dotenv.config()
 
+const debug: boolean = process.env.NODE_ENV === 'debug' || false
+
 interface GetCPFInfoRequest {
   cpf: string
 }
@@ -34,13 +36,16 @@ export async function getCPFInfo(request: FastifyRequest, reply: FastifyReply) {
       headers,
     })
 
-    console.log(`${new Date().toISOString()} 🔍 [DEBUG] CPF Request:`, cpf)
+    console.log(`${new Date().toISOString()} 🔍 [INFO] CPF Request:`, cpf)
 
     console.log(
-      `${new Date().toISOString()} 🔍 [DEBUG] Response Status:`,
+      `${new Date().toISOString()} 🔍 [INFO] Response Status:`,
       response.status,
     )
     const data: any = await response.json()
+    if (debug) {
+      console.log(`${new Date().toISOString()} 🐛[DEBUG] Response Data:`, data)
+    }
 
     if (
       data !== null &&
@@ -65,10 +70,12 @@ export async function getCPFInfo(request: FastifyRequest, reply: FastifyReply) {
         SIGLA: sigla,
       }
 
-      console.log(
-        `${new Date().toISOString()} ✅ [DEBUG] Response:`,
-        responseData,
-      )
+      if (debug) {
+        console.log(
+          `${new Date().toISOString()} ✅ [DEBUG] Response:`,
+          responseData,
+        )
+      }
       return reply.status(200).send({
         success: true,
         original_status: response.status,
@@ -77,7 +84,7 @@ export async function getCPFInfo(request: FastifyRequest, reply: FastifyReply) {
       })
     } else {
       console.log(
-        `${new Date().toISOString()} ❌ [DEBUG] Response: CPF não encontrado`,
+        `${new Date().toISOString()} ❌ [INFO] Response: CPF não encontrado`,
       )
       return reply.status(200).send({
         success: true,

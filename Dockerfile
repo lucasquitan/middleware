@@ -15,7 +15,7 @@ COPY . .
 RUN npm run build
 
 # Copy .env file (if it exists)
-COPY .env* ./
+COPY .env ./
 
 # Expose port
 EXPOSE 10000

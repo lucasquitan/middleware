@@ -14,7 +14,8 @@ docker run -d \
   --name middleware \
   -p 10000:10000 \
   -e PORT=10000 \
-  --env-file .env \
+  -e NODE_ENV=test \
+  -e TOKEN=TOKEN-VALUE-HERE \
   --restart unless-stopped \
   middleware
 
