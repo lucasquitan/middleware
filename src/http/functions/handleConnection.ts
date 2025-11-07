@@ -7,6 +7,7 @@ interface HandleConnectionRequest {
   method: string // HTTP method (GET, POST, PUT, DELETE)
   headers?: Record<string, string> // Optional HTTP headers to send
   body?: string // Optional request body to send
+  query?: Record<string, string> // Optional query parameters to send
 }
 
 /**
@@ -25,6 +26,7 @@ export async function handleConnection(
   // Extract and type-cast the request body to our interface
   // This provides type safety while accessing the request data
   const { url, method, headers, body } = request.body as HandleConnectionRequest
+  const query = request.query as Record<string, string>
 
   // Debug logging when NODE_ENV is set to 'debug'
   if (process.env.NODE_ENV === 'debug') {
@@ -33,6 +35,7 @@ export async function handleConnection(
       method,
       headers,
       body,
+      query,
       timestamp: new Date().toISOString(),
     })
   }
@@ -40,20 +43,9 @@ export async function handleConnection(
   // Validate that required fields are present
   // Return early with error response if validation fails
   if (!url || !method) {
-    // Debug logging when NODE_ENV is set to 'debug'
-    if (process.env.NODE_ENV === 'debug') {
-      console.log('❌ [DEBUG] Validation error response sent:', {
-        success: false,
-        error: 'Invalid request, url and method are required',
-        original_status: 400,
-        response: null,
-        timestamp: new Date().toISOString(),
-      })
-    }
-
     return reply.status(200).send({
       success: false,
-      error: 'Invalid request, url and method are required',
+      error: 'Invalid request; url and method are required',
       original_status: 400,
       response: null,
     })
@@ -62,11 +54,14 @@ export async function handleConnection(
   try {
     // Make the HTTP request to the specified URL using the fetch API
     // This forwards the request with the provided method, headers, and body
-    const response = await fetch(url, {
-      method,
-      headers,
-      body,
-    })
+    const response = await fetch(
+      `${url}?${new URLSearchParams(query).toString()}`,
+      {
+        method,
+        headers,
+        body,
+      },
+    )
 
     // Parse the response JSON for logging and return
     const responseData = await response.json()
@@ -91,24 +86,15 @@ export async function handleConnection(
   } catch (error) {
     // Handle any errors that occur during the fetch operation
     // This includes network errors, invalid URLs, JSON parsing errors, etc.
-    console.error(error)
-
-    // Debug logging when NODE_ENV is set to 'debug'
-    if (process.env.NODE_ENV === 'debug') {
-      console.log('❌ [DEBUG] Error response sent:', {
-        success: false,
-        error: 'Invalid request, error fetching url',
-        original_status: 400,
-        response: null,
-        timestamp: new Date().toISOString(),
-      })
-    }
+    console.error(
+      `${new Date().toISOString()} ❌ [ERROR] Error fetching url: ${error}`,
+    )
 
     // Return error response while maintaining 200 status code
     // This ensures consistent API behavior regardless of success/failure
     return reply.status(200).send({
       success: false,
-      error: 'Invalid request, error fetching url',
+      error: `Invalid request, error fetching url: ${error}`,
       original_status: 400,
       response: null,
     })
