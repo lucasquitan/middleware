@@ -92,7 +92,7 @@ export async function getCPFInfo(request: FastifyRequest, reply: FastifyReply) {
       const situacao: string = (data as any)[0].servidor.situacao.toUpperCase()
       const orgao: string = (
         data as any
-      )[0].servidor.orgaoServidorLotacao.nomeOrgaoVinculado.toUpperCase()
+      )[0].servidor.orgaoServidorLotacao.nome.toUpperCase()
       const sigla: string = (
         data as any
       )[0].servidor.orgaoServidorLotacao.sigla.toUpperCase()
