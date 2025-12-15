@@ -1,5 +1,6 @@
 import { FastifyInstance } from 'fastify'
 import { getCPFInfo } from './functions/getCPFInfo'
+import { getTicketInfoByCPF } from './functions/getTicketInfoByCPF'
 import { handleConnection } from './functions/handleConnection'
 
 /**
@@ -14,4 +15,5 @@ export async function routes(app: FastifyInstance) {
   // Forwards the request to the specified URL and returns the response
   app.post('/api', handleConnection)
   app.get('/api/cpf-info', getCPFInfo)
+  app.get('/api/una', getTicketInfoByCPF)
 }
