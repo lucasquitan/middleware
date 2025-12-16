@@ -108,6 +108,72 @@ export async function getTicketInfoByCPF(
       response,
       timestamp: new Date().toISOString(),
     })
+  } else if (cpf === '74185296313') {
+    response = {
+      total: 2,
+      content: [
+        {
+          nuProtocoloPedido: '1765392781234',
+          nmServico: 'Incluir nova entrada',
+          status: 1,
+        },
+        {
+          nuProtocoloPedido: '1765392768526',
+          nmServico: 'Correção de DARF',
+          status: 1,
+        },
+      ],
+    }
+    console.log(
+      `${new Date().toISOString()} ✅ [INFO] CPF: ${cpf} - Response: ${JSON.stringify(response)}`,
+    )
+    return reply.status(200).send({
+      success: true,
+      original_status: 200,
+      response,
+      timestamp: new Date().toISOString(),
+    })
+  } else if (cpf === '36925814720') {
+    response = {
+      total: 1,
+      content: [
+        {
+          nuProtocoloPedido: '1765392789856',
+          nmServico: 'Ratificar declaração de imóvel de domínio',
+          status: 1,
+        },
+      ],
+    }
+    console.log(
+      `${new Date().toISOString()} ✅ [INFO] CPF: ${cpf} - Response: ${JSON.stringify(response)}`,
+    )
+    return reply.status(200).send({
+      success: true,
+      original_status: 200,
+      response,
+      timestamp: new Date().toISOString(),
+    })
+  } else if (cpf === '79846513201') {
+    response = {
+      total: 1,
+      content: [
+        {
+          nuProtocoloPedido: '1765392789874',
+          nmServico: 'Regularizar dívidas',
+          status: 1,
+        },
+      ],
+    }
+
+    console.log(
+      `${new Date().toISOString()} ✅ [INFO] CPF: ${cpf} - Response: ${JSON.stringify(response)}`,
+    )
+    return reply.status(200).send({
+      success: true,
+      original_status: 200,
+      response,
+      timestamp: new Date().toISOString(),
+    })
   } else {
     // Log the CPF being requested for tracking purposes
     console.log(
