@@ -1,25 +1,12 @@
 #!/bin/bash
 
-echo "🐳 Building and running middleware with Docker..."
+echo "🐳 Building and running middleware with Docker Compose..."
 
-# Build the Docker image
-docker build -t middleware .
-
-# Stop and remove existing container if it exists
-docker stop middleware 2>/dev/null || true
-docker rm middleware 2>/dev/null || true
-
-# Run the container with .env file
-docker run -d \
-  --name middleware \
-  -p 10000:10000 \
-  -e PORT=10000 \
-  -e NODE_ENV=test \
-  -e TOKEN=TOKEN-VALUE-HERE \
-  --restart unless-stopped \
-  middleware
+# Build and run using docker-compose
+docker-compose up -d --build
 
 echo "✅ Middleware service is running on port 10000"
-echo "📊 Check status: docker ps"
-echo "📝 View logs: docker logs middleware"
-echo "🛑 Stop service: docker stop middleware"
+echo "📊 Check status: docker-compose ps"
+echo "📝 View logs: docker-compose logs -f middleware"
+echo "🛑 Stop service: docker-compose down"
+echo "🔄 Restart service: docker-compose restart middleware"

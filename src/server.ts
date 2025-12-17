@@ -1,5 +1,7 @@
 import dotenv from 'dotenv'
 import { app } from './app'
+import './database/init' // Importa para inicializar o banco de dados
+import { seedDatabase } from './database/seed'
 
 // Load environment variables from .env file
 dotenv.config()
@@ -24,6 +26,8 @@ app
 
     if (env === 'debug') {
       console.log(`🐛 TOKEN: ${process.env.TOKEN}`)
+      // Descomente a linha abaixo se quiser popular o banco apenas em modo debug
+      seedDatabase()
     }
   })
   .catch((error) => {

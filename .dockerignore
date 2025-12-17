@@ -1,0 +1,14 @@
+node_modules
+dist
+.env
+*.db
+*.db-shm
+*.db-wal
+.git
+.gitignore
+README.md
+.vscode
+.idea
+docker-debug.sh
+docker-deploy.sh
+*.log

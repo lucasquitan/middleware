@@ -7,6 +7,10 @@ services:
       - "10000:10000"
     environment:
       - PORT=10000
+      - NODE_ENV=${NODE_ENV:-production}
     env_file:
       - .env
+    volumes:
+      # Persiste o banco de dados SQLite
+      - ./database:/app/database
     restart: unless-stopped
