@@ -3,6 +3,10 @@ import { FastifyReply, FastifyRequest } from 'fastify'
 
 // Import dotenv to load environment variables from .env file
 import dotenv from 'dotenv'
+import LoggerComponent from '../../utils/loggerBuilder'
+
+// Create logger instance
+const logger = new LoggerComponent('getTicketInfoByCPF')
 
 // Load environment variables from .env file into process.env
 dotenv.config()
@@ -37,6 +41,7 @@ export async function getTicketInfoByCPF(
 
   // Validate that CPF parameter is provided
   if (!cpf) {
+    logger.debug('CPF not provided', { cpf })
     return reply.status(200).send({
       success: false,
       original_status: 400,
@@ -62,9 +67,11 @@ export async function getTicketInfoByCPF(
       ],
     }
     // Log the CPF being requested for tracking purposes
-    console.log(
-      `${new Date().toISOString()} ✅ [INFO] CPF: ${cpf} - Response: ${JSON.stringify(response)}`,
-    )
+    logger.info('Get ticket info by CPF Req/Res', {
+      cpf,
+      status: 200,
+    })
+
     return reply.status(200).send({
       success: true,
       original_status: 200,
@@ -99,9 +106,11 @@ export async function getTicketInfoByCPF(
       ],
     }
     // Log the CPF being requested for tracking purposes
-    console.log(
-      `${new Date().toISOString()} ✅ [INFO] CPF: ${cpf} - Response: ${JSON.stringify(response)}`,
-    )
+    logger.info('Get ticket info by CPF Req/Res', {
+      cpf,
+      status: 200,
+    })
+
     return reply.status(200).send({
       success: true,
       original_status: 200,
@@ -124,9 +133,10 @@ export async function getTicketInfoByCPF(
         },
       ],
     }
-    console.log(
-      `${new Date().toISOString()} ✅ [INFO] CPF: ${cpf} - Response: ${JSON.stringify(response)}`,
-    )
+    logger.info('Get ticket info by CPF Req/Res', {
+      cpf,
+      status: 200,
+    })
     return reply.status(200).send({
       success: true,
       original_status: 200,
@@ -144,9 +154,10 @@ export async function getTicketInfoByCPF(
         },
       ],
     }
-    console.log(
-      `${new Date().toISOString()} ✅ [INFO] CPF: ${cpf} - Response: ${JSON.stringify(response)}`,
-    )
+    logger.info('Get ticket info by CPF Req/Res', {
+      cpf,
+      status: 200,
+    })
     return reply.status(200).send({
       success: true,
       original_status: 200,
@@ -165,9 +176,10 @@ export async function getTicketInfoByCPF(
       ],
     }
 
-    console.log(
-      `${new Date().toISOString()} ✅ [INFO] CPF: ${cpf} - Response: ${JSON.stringify(response)}`,
-    )
+    logger.info('Get ticket info by CPF Req/Res', {
+      cpf,
+      status: 200,
+    })
     return reply.status(200).send({
       success: true,
       original_status: 200,
@@ -176,12 +188,13 @@ export async function getTicketInfoByCPF(
     })
   } else {
     // Log the CPF being requested for tracking purposes
-    console.log(
-      `${new Date().toISOString()} ❌ [INFO] CPF: ${cpf} - Response: CPF not found or no tickets found`,
-    )
+    logger.info('Get ticket info by CPF Req/Res', {
+      cpf,
+      status: 404,
+    })
     return reply.status(200).send({
       success: true,
-      original_status: 200,
+      original_status: 404,
       response: { total: 0, content: [] },
       timestamp: new Date().toISOString(),
     })

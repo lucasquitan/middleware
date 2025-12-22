@@ -2,8 +2,7 @@ import { FastifyInstance } from 'fastify'
 import { getCPFInfo } from './functions/getCPFInfo'
 import { getTicketInfoByCPF } from './functions/getTicketInfoByCPF'
 import { handleConnection } from './functions/handleConnection'
-import { queryTicketInfo } from './functions/queryTicketsDetails'
-import { queryTicketInfoUsingDB } from './functions/queryTicketsDetailUsingDB'
+import { queryTicketDetails } from './functions/queryTicketsDetails'
 
 /**
  * Routes configuration function that registers all API endpoints
@@ -18,6 +17,5 @@ export async function routes(app: FastifyInstance) {
   app.post('/api', handleConnection)
   app.get('/api/cpf-info', getCPFInfo)
   app.get('/api/una', getTicketInfoByCPF)
-  app.get('/api/ticket-info', queryTicketInfo)
-  app.get('/api/ticket-info-db', queryTicketInfoUsingDB)
+  app.get('/api/ticket-info-db', queryTicketDetails)
 }
