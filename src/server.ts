@@ -2,13 +2,14 @@ import dotenv from 'dotenv'
 import { app } from './app'
 import './database/init' // Importa para inicializar o banco de dados
 import { seedDatabase } from './database/seed'
+import LoggerComponent from './utils/loggerBuilder'
 
 // Load environment variables from .env file
 dotenv.config()
 
 const port: number = parseInt(process.env.PORT || '3331')
 const env: string = process.env.NODE_ENV || 'production'
-
+const logger = new LoggerComponent('Server')
 /**
  * Server startup configuration
  * This file is the entry point that starts the HTTP server
@@ -22,13 +23,10 @@ app
   })
   .then(() => {
     // Log successful server startup
-    console.log(`🚀 HTTP server running on port ${port} in ${env} mode`)
-
-    if (env === 'debug') {
-      console.log(`🐛 TOKEN: ${process.env.TOKEN}`)
-      // Descomente a linha abaixo se quiser popular o banco apenas em modo debug
-      seedDatabase()
-    }
+    logger.info(`HTTP server running on port ${port} in ${env} mode`)
+    logger.debug('Token', { token: process.env.TOKEN })
+    logger.info('Logger level', { level: process.env.LOGGER_LEVEL })
+    seedDatabase()
   })
   .catch((error) => {
     console.error(`❌ Error starting server: ${error}`)

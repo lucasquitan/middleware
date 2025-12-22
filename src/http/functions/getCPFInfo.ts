@@ -1,14 +1,12 @@
-// Import necessary types from Fastify for handling HTTP requests and responses
+// Import necessary dependencies
 import { FastifyReply, FastifyRequest } from 'fastify'
-
-// Import dotenv to load environment variables from .env file
 import dotenv from 'dotenv'
 
-// Load environment variables from .env file into process.env
-dotenv.config()
+// Import LoggerComponent for logging
+import LoggerComponent from '../../utils/loggerBuilder'
 
-// Debug flag to control verbose logging - set to true when NODE_ENV is 'debug'
-const debug: boolean = process.env.NODE_ENV === 'debug' || false
+dotenv.config()
+const logger = new LoggerComponent('getCPFInfo')
 
 // Interface defining the structure of the request query parameters
 interface GetCPFInfoRequest {
@@ -28,12 +26,12 @@ interface GetCPFInfoRequest {
  * @param reply - Fastify reply object for sending HTTP responses
  * @returns Promise<void> - Sends HTTP response with CPF data or error
  */
+
 export async function getCPFInfo(request: FastifyRequest, reply: FastifyReply) {
-  // Extract CPF from query parameters with type assertion
   const { cpf } = request.query as GetCPFInfoRequest
 
-  // Validate that CPF parameter is provided
   if (!cpf) {
+    logger.warn('The CPF parameter was not provided')
     return reply.status(200).send({
       succes: false, // Note: typo in 'success' - should be 'success'
       original_status: 400,
@@ -54,27 +52,17 @@ export async function getCPFInfo(request: FastifyRequest, reply: FastifyReply) {
   }
 
   try {
-    // Make HTTP GET request to the transparency API
     const response = await fetch(url, {
       method: 'GET',
       headers,
     })
 
     // Log the CPF being requested for tracking purposes
-    console.log(`${new Date().toISOString()} 🔍 [INFO] CPF Request:`, cpf)
 
-    // Log response status for monitoring
-    if (response.status === 200) {
-      console.log(
-        `${new Date().toISOString()} ✅ [INFO] Response Status:`,
-        response.status,
-      )
-    } else {
-      console.log(
-        `${new Date().toISOString()} ❌ [INFO] Response Status:`,
-        response.status,
-      )
-    }
+    logger.info('Check CPF info successfully', {
+      cpf,
+      response: response.status,
+    })
 
     // Parse the JSON response from the API
     const data: any = await response.json()
@@ -111,12 +99,7 @@ export async function getCPFInfo(request: FastifyRequest, reply: FastifyReply) {
       }
 
       // Log detailed response data if debug mode is enabled
-      if (debug) {
-        console.log(
-          `${new Date().toISOString()} ✅ [DEBUG] Response:`,
-          responseData,
-        )
-      }
+      logger.debug(`Response for CPF: ${cpf}`, { response: responseData })
 
       // Return successful response with the extracted data
       return reply.status(200).send({
@@ -126,10 +109,6 @@ export async function getCPFInfo(request: FastifyRequest, reply: FastifyReply) {
         timestamp: new Date().toISOString(),
       })
     } else {
-      // Handle case where CPF is not found in the database
-      console.log(
-        `${new Date().toISOString()} ❌ [INFO] Response: CPF not found`,
-      )
       return reply.status(200).send({
         success: true,
         original_status: 404,
@@ -141,7 +120,7 @@ export async function getCPFInfo(request: FastifyRequest, reply: FastifyReply) {
     }
   } catch (error) {
     // Handle any errors that occur during the API request or data processing
-    console.error(`${new Date().toISOString()} ❌ [DEBUG] Error:`, error)
+    logger.error('Error', { error })
     return reply.status(200).send({
       success: false,
       original_status: 500,

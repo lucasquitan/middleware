@@ -1,4 +1,7 @@
 import { ticketRepository } from './ticketRepository'
+import LoggerComponent from '../utils/loggerBuilder'
+
+const logger = new LoggerComponent('Seed')
 
 const tickets = [
   {
@@ -60,11 +63,11 @@ const tickets = [
 ]
 
 export function seedDatabase() {
-  console.log('🌱 Populando banco de dados com dados iniciais...')
+  logger.info('Populating database with initial data...')
 
   tickets.forEach((ticket) => {
     ticketRepository.create(ticket)
   })
 
-  console.log(`✅ ${tickets.length} tickets inseridos no banco de dados`)
+  logger.info(`${tickets.length} tickets inserted into database`)
 }
