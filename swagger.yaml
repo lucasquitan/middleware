@@ -1,0 +1,650 @@
+openapi: 3.0.3
+info:
+  title: Middleware API
+  description: HTTP proxy/middleware service built by Lucas Quintanilha.
+  version: 1.0.0
+  contact:
+    name: API Support
+    url: https://github.com/lucasquitan/middleware/issues
+  license:
+    name: ISC
+
+servers:
+  - url: http://localhost:3331
+    description: Local development server
+  - url: https://aicc-middleware.onrender.com
+    description: Production server
+
+paths:
+  /api:
+    post:
+      summary: Universal proxy/middleware endpoint
+      description: |
+        Acts as a proxy/middleware that accepts requests with URL, method, headers, and body,
+        then forwards the request to the specified URL and returns the response.
+        Always returns HTTP 200 status, with success/error information in the response body.
+        
+        **Query Parameters (optional):**
+        Any query parameters passed to this endpoint will be forwarded to the target URL.
+        Example: `/api?param1=value1&param2=value2`
+      operationId: handleConnection
+      tags:
+        - Proxy
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - url
+                - method
+              properties:
+                url:
+                  type: string
+                  description: The target URL to make the HTTP request to
+                  example: "https://api.example.com/endpoint"
+                method:
+                  type: string
+                  description: HTTP method (GET, POST, PUT, DELETE, etc.)
+                  enum: [GET, POST, PUT, DELETE, PATCH, OPTIONS, HEAD]
+                  example: "GET"
+                headers:
+                  type: object
+                  description: Optional HTTP headers to send
+                  additionalProperties:
+                    type: string
+                  example:
+                    Content-Type: "application/json"
+                    Authorization: "Bearer token"
+                body:
+                  type: string
+                  description: Optional request body to send
+                  example: '{"key": "value"}'
+      responses:
+        '200':
+          description: Always returns 200 status with success/error information
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/ProxySuccessResponse'
+                  - $ref: '#/components/schemas/ProxyErrorResponse'
+              examples:
+                success:
+                  summary: Successful proxy request
+                  value:
+                    success: true
+                    original_status: 200
+                    response:
+                      data: "example response data"
+                error:
+                  summary: Invalid request parameters
+                  value:
+                    success: false
+                    error: "Invalid request; url and method are required"
+                    original_status: 400
+                    response: null
+
+  /api/cpf-info:
+    get:
+      summary: Get CPF information from Portal da Transparência
+      description: |
+        Retrieves CPF information from the Brazilian government transparency API (Portal da Transparência).
+        Returns formatted server information including name, status, and organization details.
+      operationId: getCPFInfo
+      tags:
+        - CPF
+      parameters:
+        - name: cpf
+          in: query
+          required: true
+          description: | 
+            CPF number (Brazilian tax ID) to query. Format: 11 digits without formatting.
+          schema:
+            type: string
+            pattern: '^\d{11}$'
+            example: "80713245077"
+      responses:
+        '200':
+          description: Response with CPF information or error message
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/CPFInfoSuccessResponse'
+                  - $ref: '#/components/schemas/CPFInfoNotFoundResponse'
+                  - $ref: '#/components/schemas/CPFInfoErrorResponse'
+              examples:
+                success:
+                  summary: Successful response with CPF information
+                  value:
+                    success: true
+                    original_status: 200
+                    response:
+                      CPF: "80713245077"
+                      NOME: "JOAO SILVA"
+                      SITUACAO: "ATIVO"
+                      ORGAO: "MINISTERIO DA FAZENDA"
+                      SIGLA: "MF"
+                      CODIGO: "36000"
+                    timestamp: "2024-01-01T12:00:00.000Z"
+                notFound:
+                  summary: CPF not found in the system
+                  value:
+                    success: true
+                    original_status: 404
+                    response:
+                      message: "CPF não encontrado."
+                      timestamp: "2024-01-01T12:00:00.000Z"
+                error:
+                  summary: Missing required parameter
+                  value:
+                    success: false
+                    original_status: 400
+                    response:
+                      error: "CPF is required"
+                      timestamp: "2024-01-01T12:00:00.000Z"
+
+  /api/una:
+    get:
+      summary: Get ticket information by CPF
+      description: |
+        Retrieves ticket information for a given CPF. Returns a list of tickets with protocol numbers,
+        service names, and status codes. This endpoint uses mock data for specific CPF values.
+      operationId: getTicketInfoByCPF
+      tags:
+        - Tickets
+      parameters:
+        - name: cpf
+          in: query
+          required: true
+          description: | 
+            CPF number (Brazilian tax ID) to query tickets. Format: 11 digits without formatting.
+          schema:
+            type: string
+            pattern: '^\d{11}$'
+            example: "80713245077"
+      responses:
+        '200':
+          description: Response with ticket information
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/TicketInfoSuccessResponse'
+                  - $ref: '#/components/schemas/TicketInfoNotFoundResponse'
+                  - $ref: '#/components/schemas/TicketInfoErrorResponse'
+              examples:
+                success:
+                  summary: Successful response with ticket list
+                  value:
+                    success: true
+                    original_status: 200
+                    response:
+                      total: 1
+                      content:
+                        - nuProtocoloPedido: "1765392696777"
+                          nmServico: "Solicitar Aposentadoria"
+                          status: 1
+                    timestamp: "2024-01-01T12:00:00.000Z"
+                notFound:
+                  summary: No tickets found for the CPF
+                  value:
+                    success: true
+                    original_status: 404
+                    response:
+                      total: 0
+                      content: []
+                    timestamp: "2024-01-01T12:00:00.000Z"
+                error:
+                  summary: Missing required parameter
+                  value:
+                    success: false
+                    original_status: 400
+                    response:
+                      error: "CPF is required"
+                      timestamp: "2024-01-01T12:00:00.000Z"
+
+  /api/ticket-info-db:
+    get:
+      summary: Get ticket details from database
+      description: |
+        Retrieves detailed ticket information from the database by protocol ID and CPF.
+        Validates that the ticket belongs to the specified CPF owner.
+      operationId: queryTicketDetails
+      tags:
+        - Tickets
+      parameters:
+        - name: id
+          in: query
+          required: true
+          description: Ticket protocol number (13 digits)
+          schema:
+            type: string
+            pattern: '^\d{13}$'
+            example: "1765392696777"
+        - name: cpf
+          in: query
+          required: true
+          description: CPF number (Brazilian tax ID) of the ticket owner. 11 digits without formatting.
+          schema:
+            type: string
+            pattern: '^\d{11}$'
+            example: "80713245077"
+      responses:
+        '200':
+          description: Response with ticket details
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/TicketDetailSuccessResponse'
+                  - $ref: '#/components/schemas/TicketDetailNotFoundResponse'
+                  - $ref: '#/components/schemas/TicketDetailErrorResponse'
+              examples:
+                success:
+                  summary: Successful response with ticket details
+                  value:
+                    success: true
+                    original_status: 200
+                    response:
+                      nome: "JOAO SILVA"
+                      descricao: "Descrição do chamado"
+                      fila: "SEGES_Voz"
+                      protocolo: "1765392696777"
+                    timestamp: "2024-01-01T12:00:00.000Z"
+                notFound:
+                  summary: Ticket or CPF not found
+                  value:
+                    success: false
+                    original_status: 404
+                    response:
+                      nome: "Titular não encontrado"
+                      descricao: "Chamado não encontrado"
+                      fila: "SEGES_Voz"
+                      protocolo: "1765392696777"
+                    timestamp: "2024-01-01T12:00:00.000Z"
+                error:
+                  summary: Missing required parameters
+                  value:
+                    success: false
+                    original_status: 400
+                    response:
+                      error: "Ticket ID and CPF are required"
+                      timestamp: "2024-01-01T12:00:00.000Z"
+
+components:
+  schemas:
+    ProxySuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        original_status:
+          type: integer
+          description: The actual HTTP status from the target URL
+          example: 200
+        response:
+          type: object
+          description: The response body from the target URL
+          additionalProperties: true
+      required:
+        - success
+        - original_status
+        - response
+
+    ProxyErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: string
+          example: "Invalid request; url and method are required"
+        original_status:
+          type: integer
+          example: 400
+        response:
+          type: object
+          nullable: true
+          example: null
+      required:
+        - success
+        - error
+        - original_status
+        - response
+
+    CPFInfoSuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        original_status:
+          type: integer
+          example: 200
+        response:
+          type: object
+          properties:
+            CPF:
+              type: string
+              pattern: '^\d{11}$'
+              example: "80713245077"
+            NOME:
+              type: string
+              example: "JOAO SILVA"
+            SITUACAO:
+              type: string
+              example: "ATIVO"
+            ORGAO:
+              type: string
+              example: "MINISTERIO DA FAZENDA"
+            SIGLA:
+              type: string
+              example: "MF"
+            CODIGO:
+              type: string
+              example: "36000"
+          required:
+            - CPF
+            - NOME
+            - SITUACAO
+            - ORGAO
+            - SIGLA
+            - CODIGO
+        timestamp:
+          type: string
+          format: date-time
+          example: "2024-01-01T12:00:00.000Z"
+      required:
+        - success
+        - original_status
+        - response
+        - timestamp
+
+    CPFInfoNotFoundResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        original_status:
+          type: integer
+          example: 404
+        response:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "CPF não encontrado."
+            timestamp:
+              type: string
+              format: date-time
+              example: "2024-01-01T12:00:00.000Z"
+          required:
+            - message
+            - timestamp
+      required:
+        - success
+        - original_status
+        - response
+
+    CPFInfoErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        original_status:
+          type: integer
+          example: 400
+        response:
+          type: object
+          properties:
+            error:
+              type: string
+              example: "CPF is required"
+            timestamp:
+              type: string
+              format: date-time
+              example: "2024-01-01T12:00:00.000Z"
+          required:
+            - error
+            - timestamp
+      required:
+        - success
+        - original_status
+        - response
+
+    TicketInfoSuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        original_status:
+          type: integer
+          example: 200
+        response:
+          type: object
+          properties:
+            total:
+              type: integer
+              description: Total number of tickets found
+              example: 1
+            content:
+              type: array
+              items:
+                type: object
+                properties:
+                  nuProtocoloPedido:
+                    type: string
+                    description: Ticket protocol number (13 digits)
+                    pattern: '^\d{13}$'
+                    example: "1765392696777"
+                  nmServico:
+                    type: string
+                    description: Service name
+                    example: "Solicitar Aposentadoria"
+                  status:
+                    type: integer
+                    description: Ticket status code
+                    example: 1
+                required:
+                  - nuProtocoloPedido
+                  - nmServico
+                  - status
+          required:
+            - total
+            - content
+        timestamp:
+          type: string
+          format: date-time
+          example: "2024-01-01T12:00:00.000Z"
+      required:
+        - success
+        - original_status
+        - response
+        - timestamp
+
+    TicketInfoNotFoundResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        original_status:
+          type: integer
+          example: 404
+        response:
+          type: object
+          properties:
+            total:
+              type: integer
+              example: 0
+            content:
+              type: array
+              items: {}
+              example: []
+          required:
+            - total
+            - content
+        timestamp:
+          type: string
+          format: date-time
+          example: "2024-01-01T12:00:00.000Z"
+      required:
+        - success
+        - original_status
+        - response
+        - timestamp
+
+    TicketInfoErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        original_status:
+          type: integer
+          example: 400
+        response:
+          type: object
+          properties:
+            error:
+              type: string
+              example: "CPF is required"
+            timestamp:
+              type: string
+              format: date-time
+              example: "2024-01-01T12:00:00.000Z"
+          required:
+            - error
+            - timestamp
+      required:
+        - success
+        - original_status
+        - response
+
+    TicketDetailSuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        original_status:
+          type: integer
+          example: 200
+        response:
+          type: object
+          properties:
+            nome:
+              type: string
+              description: Ticket owner name
+              example: "JOAO SILVA"
+            descricao:
+              type: string
+              description: Ticket description
+              example: "Descrição do chamado"
+            fila:
+              type: string
+              description: Queue name
+              example: "SEGES_Voz"
+            protocolo:
+              type: string
+              description: Ticket protocol number (13 digits)
+              pattern: '^\d{13}$'
+              example: "1765392696777"
+          required:
+            - nome
+            - descricao
+            - fila
+            - protocolo
+        timestamp:
+          type: string
+          format: date-time
+          example: "2024-01-01T12:00:00.000Z"
+      required:
+        - success
+        - original_status
+        - response
+        - timestamp
+
+    TicketDetailNotFoundResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        original_status:
+          type: integer
+          example: 404
+        response:
+          type: object
+          properties:
+            nome:
+              type: string
+              example: "Titular não encontrado"
+            descricao:
+              type: string
+              example: "Chamado não encontrado"
+            fila:
+              type: string
+              example: "SEGES_Voz"
+            protocolo:
+              type: string
+              pattern: '^\d{13}$'
+              example: "1765392696777"
+          required:
+            - nome
+            - descricao
+            - fila
+            - protocolo
+        timestamp:
+          type: string
+          format: date-time
+          example: "2024-01-01T12:00:00.000Z"
+      required:
+        - success
+        - original_status
+        - response
+        - timestamp
+
+    TicketDetailErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        original_status:
+          type: integer
+          example: 400
+        response:
+          type: object
+          properties:
+            error:
+              type: string
+              example: "Ticket ID and CPF are required"
+            timestamp:
+              type: string
+              format: date-time
+              example: "2024-01-01T12:00:00.000Z"
+          required:
+            - error
+            - timestamp
+      required:
+        - success
+        - original_status
+        - response
+
+tags:
+  - name: Proxy
+    description: Universal proxy/middleware endpoints
+  - name: CPF
+    description: CPF information endpoints
+  - name: Tickets
+    description: Ticket management endpoints
+
