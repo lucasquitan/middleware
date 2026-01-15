@@ -1,12 +1,85 @@
 // Import necessary dependencies
-import { FastifyReply, FastifyRequest } from 'fastify'
 import dotenv from 'dotenv'
+import { FastifyReply, FastifyRequest } from 'fastify'
 
 // Import LoggerComponent for logging
 import LoggerComponent from '../../utils/loggerBuilder'
 
 dotenv.config()
 const logger = new LoggerComponent('getCPFInfo')
+const validationLogger = new LoggerComponent('function-isValidCPF')
+
+/**
+ * Validates a CPF number using the Brazilian CPF verification algorithm
+ *
+ * The algorithm:
+ * 1. Removes all non-numeric characters
+ * 2. Checks if it has exactly 11 digits
+ * 3. Checks if all digits are not the same
+ * 4. Calculates and validates the first verification digit
+ * 5. Calculates and validates the second verification digit
+ *
+ * @param cpf - The CPF string to validate (can contain formatting characters)
+ * @returns boolean - true if CPF is valid, false otherwise
+ */
+function isValidCPF(cpf: string): boolean {
+  // Remove all non-numeric characters
+  const cleanCPF = cpf.replace(/\D/g, '')
+
+  // Check if it has exactly 11 digits
+  if (cleanCPF.length !== 11) {
+    validationLogger.info('CPF validation failed - length mismatch', {
+      cpf,
+      status: 400,
+    })
+    return false
+  }
+
+  // Check if all digits are the same (e.g., 111.111.111-11, 222.222.222-22)
+  if (/^(\d)\1{10}$/.test(cleanCPF)) {
+    validationLogger.info('CPF validation failed - all digits are the same', {
+      cpf,
+      status: 400,
+    })
+    return false
+  }
+
+  // Calculate first verification digit
+  let sum = 0
+  for (let i = 0; i < 9; i++) {
+    sum += parseInt(cleanCPF.charAt(i)) * (10 - i)
+  }
+  let remainder = (sum * 10) % 11
+  const firstDigit = remainder === 10 || remainder === 11 ? 0 : remainder
+
+  // Validate first digit
+  if (firstDigit !== parseInt(cleanCPF.charAt(9))) {
+    validationLogger.info('CPF validation failed - first digit mismatch', {
+      cpf,
+      status: 400,
+    })
+    return false
+  }
+
+  // Calculate second verification digit
+  sum = 0
+  for (let i = 0; i < 10; i++) {
+    sum += parseInt(cleanCPF.charAt(i)) * (11 - i)
+  }
+  remainder = (sum * 10) % 11
+  const secondDigit = remainder === 10 || remainder === 11 ? 0 : remainder
+
+  // Validate second digit
+  if (secondDigit !== parseInt(cleanCPF.charAt(10))) {
+    validationLogger.info('CPF validation failed - second digit mismatch', {
+      cpf,
+      status: 400,
+    })
+    return false
+  }
+
+  return true
+}
 
 // Interface defining the structure of the request query parameters
 interface GetCPFInfoRequest {
@@ -28,15 +101,34 @@ interface GetCPFInfoRequest {
  */
 
 export async function getCPFInfo(request: FastifyRequest, reply: FastifyReply) {
+  logger.info('getCPFInfo function called', { request: request.query })
   const { cpf } = request.query as GetCPFInfoRequest
 
   if (!cpf) {
-    logger.warn('The CPF parameter was not provided')
+    logger.warn('The CPF is mandatory and was not provided', {
+      cpf,
+      status: 400,
+    })
     return reply.status(200).send({
       succes: false, // Note: typo in 'success' - should be 'success'
       original_status: 400,
       response: {
         error: 'CPF is required',
+        timestamp: new Date().toISOString(),
+      },
+    })
+  }
+  // Validate CPF format and verification digits
+  if (!isValidCPF(cpf)) {
+    logger.info('CPF validation failed on isValidCPF function', {
+      cpf,
+      status: 400,
+    })
+    return reply.status(200).send({
+      success: false,
+      original_status: 400,
+      response: {
+        error: 'CPF is invalid',
         timestamp: new Date().toISOString(),
       },
     })
@@ -58,11 +150,6 @@ export async function getCPFInfo(request: FastifyRequest, reply: FastifyReply) {
     })
 
     // Log the CPF being requested for tracking purposes
-
-    logger.info('Check CPF info successfully', {
-      cpf,
-      response: response.status,
-    })
 
     // Parse the JSON response from the API
     const data: any = await response.json()
@@ -100,6 +187,7 @@ export async function getCPFInfo(request: FastifyRequest, reply: FastifyReply) {
 
       // Log detailed response data if debug mode is enabled
       logger.debug(`Response for CPF: ${cpf}`, { response: responseData })
+      logger.info('CPF provided is valid and was found', { cpf, status: 200 })
 
       // Return successful response with the extracted data
       return reply.status(200).send({
@@ -109,6 +197,10 @@ export async function getCPFInfo(request: FastifyRequest, reply: FastifyReply) {
         timestamp: new Date().toISOString(),
       })
     } else {
+      logger.info('CPF provided is valid but was not found', {
+        cpf,
+        status: 404,
+      })
       return reply.status(200).send({
         success: true,
         original_status: 404,
