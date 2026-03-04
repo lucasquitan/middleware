@@ -3,6 +3,7 @@ import { getCPFInfo } from './functions/getCPFInfo'
 import { getTicketInfoByCPF } from './functions/getTicketInfoByCPF'
 import { handleConnection } from './functions/handleConnection'
 import { queryTicketDetails } from './functions/queryTicketsDetails'
+import { convertHTMLsource } from './functions/convertHTMLsource'
 
 /**
  * Routes configuration function that registers all API endpoints
@@ -11,11 +12,12 @@ import { queryTicketDetails } from './functions/queryTicketsDetails'
  * @param app - Fastify application instance to register routes on
  */
 export async function routes(app: FastifyInstance) {
-  // Register the proxy/middleware endpoint
-  // POST /api - Accepts requests with URL, method, headers, and body
-  // Forwards the request to the specified URL and returns the response
-  app.post('/api', handleConnection)
-  app.get('/api/cpf-info', getCPFInfo)
-  app.get('/api/una', getTicketInfoByCPF)
-  app.get('/api/ticket-info-db', queryTicketDetails)
+	// Register the proxy/middleware endpoint
+	// POST /api - Accepts requests with URL, method, headers, and body
+	// Forwards the request to the specified URL and returns the response
+	app.post('/api', handleConnection)
+	app.get('/api/cpf-info', getCPFInfo)
+	app.get('/api/una', getTicketInfoByCPF)
+	app.get('/api/ticket-info-db', queryTicketDetails)
+	app.post('/api/convert-html-source', convertHTMLsource)
 }
